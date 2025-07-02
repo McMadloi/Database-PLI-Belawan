@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Perekaman Pengguna Layanan</title>
+  <link rel="stylesheet" href="Perekaman.css">
+</head>
+<body>
+  <div class="center-container">
+    <div class="home-box">
+      <h2>Perekaman Pengguna Layanan</h2>
+      <form action="/perekaman" method="POST" autocomplete="off">
+        <label>Tanggal: <input type="date" name="tanggal" required></label><br>
+        <label>Nama: <input type="text" name="nama" required></label><br>
+        <label>Nama Perusahaan: <input type="text" name="nama_perusahaan"></label><br>
+        <label>Jam Mulai: <input type="time" name="jam_mulai" required></label><br>
+        <label>Jam Selesai: <input type="time" name="jam_selesai" required></label><br>
+        <label>Jenis Layanan: <select name="jenis_layanan" required>
+            <option value="" disabled selected>Pilih Jenis Layanan</option>
+            <option value="Tatap Muka">Tatap Muka</option>
+            <option value="Whatsaap">Whatsaap</option>
+            <option value="Live Chat">Live Chat</option>
+            <option value="Media Sosial">Media Sosial</option>
+            <option value="Telepon">Telepon</option>
+            <option value="IMEI">IMEI</option>
+          </select>
+        </label><br>
+        <label>Pertanyaan:<br>
+          <textarea name="pertanyaan" rows="2" cols="40"></textarea>
+        </label><br>
+        <label>Jawaban:<br>
+          <textarea name="jawaban" rows="2" cols="40"></textarea>
+        </label><br>
+        <label>Petugas: <input type="text" name="petugas" placeholder="(auto-filled)" readonly></label><br>
+        <button type="submit" class="home-btn">Simpan</button>
+        <a href="/data" class="home-btn">Buka Data</a>
+        <a href="/user-home" class="home-btn">Kembali</a>
+      </form>
+    </div>
+  </div>
+  <div class="bg-animated"></div>
+  <script>
+    // Auto-fill petugas with logged-in username if available
+    fetch('/user-home')
+      .then(res => res.text())
+      .then(html => {
+        const match = html.match(/Selamat datang,\s*([\w\d_.-]+)/i);
+        if(match) document.querySelector('[name=petugas]').value = match[1];
+      });
+  </script>
+</body>
+</html>

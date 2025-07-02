@@ -1,0 +1,110 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(120deg, #a6c0fe, #f68084);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.register-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.register-box {
+    background: #fff;
+    padding: 2.5rem 2rem;
+    border-radius: 18px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+    text-align: center;
+    width: 380px;
+    max-width: 90vw;
+}
+
+.register-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 1.3rem;
+    color: #222;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    background: #f7f7fa;
+    border-radius: 8px;
+    margin-bottom: 1.3rem;
+    padding: 0.6em 0.8em;
+    width: 240px;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+}
+
+.input-icon {
+    margin-right: 8px;
+    color: #888;
+    font-size: 1.1rem;
+}
+
+.input-group input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 1rem;
+    flex: 1;
+    color: #333;
+    text-align: left;
+}
+
+.input-group input::placeholder {
+    color: #aaa;
+}
+
+.toggle-password {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    margin-left: 6px;
+    font-size: 1.1rem;
+}
+
+.register-button {
+    width: 100%;
+    padding: 0.8em 0;
+    background: linear-gradient(90deg, #7c83fd 0%, #96fbc4 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.15rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 0.8rem;
+    transition: background 0.2s;
+}
+
+.register-button:hover {
+    background: linear-gradient(90deg, #6a6efc 0%, #82e6b0 100%);
+}
+
+.signup-link {
+    margin-top: 1.2rem;
+    font-size: 1rem;
+}
+
+.signup-link a {
+    color: #7c83fd;
+    text-decoration: none;
+    margin-left: 5px;
+}
+
+.signup-link a:hover {
+    text-decoration: underline;
+}
