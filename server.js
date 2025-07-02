@@ -1,20 +1,17 @@
 const express = require('express');
-const router = express.Router();
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
-const db = require('./db.js');
+const db = require('./db.js'); // adjust path if needed!
 const app = express();
-const PORT = 3000;
 
+// Calculate total waktu helper
 function calculateTotalWaktu(jamMulai, jamSelesai) {
-  // jamMulai/jamSelesai in "HH:mm" format
   if (!jamMulai || !jamSelesai) return '';
   const [hStart, mStart] = jamMulai.split(':').map(Number);
   const [hEnd, mEnd] = jamSelesai.split(':').map(Number);
   let start = hStart * 60 + mStart;
   let end = hEnd * 60 + mEnd;
-  // Handle if selesai is past midnight
   if (end < start) end += 24 * 60;
   const diff = end - start;
   const hDiff = Math.floor(diff / 60);
@@ -22,16 +19,18 @@ function calculateTotalWaktu(jamMulai, jamSelesai) {
   return `${hDiff}j ${mDiff}m`;
 }
 
+// Use process.cwd() because __dirname is not defined in Vercel
+const PUBLIC_DIR = path.join(process.cwd(), 'public');
+
 // Middleware
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(PUBLIC_DIR));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
-  secret: 'your_secret_key', // Change this to a random string in production!
+  secret: 'your_secret_key', // Change this in production!
   resave: false,
   saveUninitialized: true
 }));
 
-// Middleware for login protection
 function requireLogin(req, res, next) {
   if (!req.session.user) {
     return res.redirect('/login');
@@ -50,7 +49,7 @@ app.get('/', (req, res) => {
 
 // Login Page
 app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+  res.sendFile(path.join(PUBLIC_DIR, 'login.html'));
 });
 
 // Login Handler
@@ -66,7 +65,7 @@ app.post('/login', (req, res) => {
 
 // Register Page
 app.get('/register', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'register.html'));
+  res.sendFile(path.join(PUBLIC_DIR, 'register.html'));
 });
 
 // Register Handler
@@ -84,7 +83,7 @@ app.post('/register', (req, res) => {
 
 // User Home
 app.get('/user-home', requireLogin, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'user-home.html'));
+  res.sendFile(path.join(PUBLIC_DIR, 'user-home.html'));
 });
 
 app.get('/user-info', requireLogin, (req, res) => {
@@ -100,7 +99,7 @@ app.get('/logout', (req, res) => {
 
 // Show form (Menu Perekaman Pengguna Layanan)
 app.get('/perekaman', requireLogin, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'perekaman.html'));
+  res.sendFile(path.join(PUBLIC_DIR, 'perekaman.html'));
 });
 
 // Handle form submit
@@ -114,7 +113,7 @@ app.post('/perekaman', requireLogin, (req, res) => {
     jenis_layanan: req.body.jenis_layanan,
     pertanyaan: req.body.pertanyaan,
     jawaban: req.body.jawaban,
-    petugas: req.body.petugas || req.session.user.username // fallback to logged-in user
+    petugas: req.body.petugas || req.session.user.username
   };
   db.createLayananRecord(data, (err, id) => {
     if (err) return res.send('Database error: ' + err.message);
@@ -186,7 +185,6 @@ app.get('/data', requireLogin, (req, res) => {
       </table>
       <div class="pagination">`;
 
-    // Pagination controls
     for (let i = 1; i <= totalPages; i++) {
       if (i === page) {
         out += `<span class="page-link active">${i}</span>`;
@@ -205,7 +203,6 @@ app.get('/data', requireLogin, (req, res) => {
   </div>
   <div class="bg-animated"></div>
   <script>
-    // Simple client-side table search
     document.getElementById('searchInput').addEventListener('input', function() {
       const filter = this.value.toLowerCase();
       const rows = document.querySelectorAll('#dataTable tbody tr');
@@ -218,11 +215,8 @@ app.get('/data', requireLogin, (req, res) => {
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <script>
 document.getElementById('exportBtn').addEventListener('click', function() {
-  // Get the table element
   var table = document.getElementById('dataTable');
-  // Convert the table to a worksheet
   var wb = XLSX.utils.table_to_book(table, {sheet:"Sheet1"});
-  // Export it to file
   XLSX.writeFile(wb, 'data_pengguna_layanan.xlsx');
 });
 </script>
@@ -242,7 +236,6 @@ app.get('/visualisasi', requireLogin, (req, res) => {
     let totalMinutes = 0;
     let count = 0;
     for (const r of records) {
-      // Calculate total waktu directly from jam_mulai and jam_selesai
       const waktuStr = calculateTotalWaktu(r.jam_mulai, r.jam_selesai);
       const mins = waktuStrToMinutes(waktuStr);
       if (mins > 0) {
@@ -277,10 +270,9 @@ app.get('/visualisasi', requireLogin, (req, res) => {
       const date = r.tanggal || r.date || 'Unknown Date';
       dateCounts[date] = (dateCounts[date] || 0) + 1;
     }
-    const dateLabels = Object.keys(dateCounts).sort(); // To ensure chronological order
+    const dateLabels = Object.keys(dateCounts).sort();
     const dateData = dateLabels.map(date => dateCounts[date]);
 
-    // Helper functions for time conversion
     function waktuStrToMinutes(waktuStr) {
       if (!waktuStr) return 0;
       let match = waktuStr.match(/(\d+)j/);
@@ -296,7 +288,6 @@ app.get('/visualisasi', requireLogin, (req, res) => {
       return `${h}j ${m}m`;
     }
 
-    // Send the HTML response (unchanged except for the above fix)
     res.send(`
 <!DOCTYPE html>
 <html lang="en">
@@ -339,7 +330,6 @@ app.get('/visualisasi', requireLogin, (req, res) => {
   <div class="bg-animated"></div>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Bar chart for Jenis Layanan
     const labels = ${JSON.stringify(labels)};
     const data = ${JSON.stringify(data)};
     const ctx = document.getElementById('myChart').getContext('2d');
@@ -364,7 +354,6 @@ app.get('/visualisasi', requireLogin, (req, res) => {
       }
     });
 
-    // Pie chart for Petugas
     const petugasLabels = ${JSON.stringify(petugasLabels)};
     const petugasData = ${JSON.stringify(petugasData)};
     const pieCtx = document.getElementById('petugasPieChart').getContext('2d');
@@ -388,7 +377,7 @@ app.get('/visualisasi', requireLogin, (req, res) => {
         }
       }
     });
-   // Line chart for total data per date
+
     const dateLabels = ${JSON.stringify(dateLabels)};
     const dateData = ${JSON.stringify(dateData)};
     const lineCtx = document.getElementById('dateLineChart').getContext('2d');
@@ -439,7 +428,5 @@ app.get('/show-users', requireLogin, (req, res) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server started at http://localhost:${PORT}`);
-});
+// Export the Express app for Vercel serverless
+module.exports = app;
