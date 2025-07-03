@@ -206,7 +206,7 @@ app.get('/data', requireLogin, async (req, res) => {
 
     for (let i = 1; i <= totalPages; i++) {
       if (i === page) {
-        out += <span class="page-link active">${i}</span>;
+        out += `<span class="page-link active">${i}</span>`;
       } else {
         out += `<a href="/data?page=${i}" class="page-link">${i}</a>`;
       }
@@ -435,9 +435,9 @@ app.get('/show-users', requireLogin, async (req, res) => {
     const users = await db.listUsers();
     let out = <h2>Registered Users</h2><ul>;
     for (const user of users) {
-      out += <li>${user.username}</li>;
+      out += `<li>${user.username}</li>`;
     }
-    out += </ul><a href="/user-home">Back</a>;
+    out += `</ul><a href="/user-home">Back</a>`;
     res.send(out);
   } catch (err) {
     res.send('Database error: ' + err.message);
