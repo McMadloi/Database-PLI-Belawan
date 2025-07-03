@@ -208,7 +208,7 @@ app.get('/data', requireLogin, async (req, res) => {
       if (i === page) {
         out += <span class="page-link active">${i}</span>;
       } else {
-        out += <a href="/data?page=${i}" class="page-link">${i}</a>;
+        out += `<a href="/data?page=${i}" class="page-link">${i}</a>`;
       }
     }
     out += `
