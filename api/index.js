@@ -4,8 +4,8 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
 const db = createClient({
-  url: process.env.libsql://pli-belawan-mcmadloi.aws-us-east-1.turso.io,
-  authToken: process.env.eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NTE0Nzc5MjcsImlkIjoiYzliN2M3MDctOWJkNy00MzEzLWIyZWEtNzNlY2RmOGUwYTJjIiwicmlkIjoiNDljYjBlMzctYTE5NC00ZmNkLThhZTgtZjZjZTJmYWI4OTkyIn0.F4P3IcsYjBfmH7TssmeGYrDwS4PQmhkhn4OgRbPPJy7hcRR_5PLZDjaePMPBJOB6q5KgHrL8PmfTBAP3oeTkDA,
+  url: process.env.DB_URL,
+  authToken: process.env.DB_AUTH_TOKEN,
 });
 const app = express();
 
