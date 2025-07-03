@@ -43,7 +43,11 @@ function calculateTotalWaktu(jamMulai, jamSelesai) {
 }
 
 function requireLogin(req, res, next) {
-  if (!req.session.user) return res.redirect('/login');
+  console.log('requireLogin, session:', req.session); // Debug: session on protected route
+  if (!req.session.user) {
+    console.log('User not logged in, redirecting to /login');
+    return res.redirect('/login');
+  }
   next();
 }
 
@@ -59,15 +63,22 @@ app.get('/login', (req, res) => {
 
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
+  console.log('POST /login', { username, password }); // Debug: credentials submitted
   try {
     const user = await db.findUser(username, password);
-    if (!user) return res.send('Login gagal! Username atau password salah. <a href="/login">Coba lagi</a>');
+    console.log('findUser result:', user); // Debug: user from DB
+    if (!user) {
+      console.log('Login failed: user not found or wrong password');
+      return res.send('Login gagal! Username atau password salah. <a href="/login">Coba lagi</a>');
+    }
     req.session.user = { id: user.id, username: user.username };
+    console.log('Login successful. Session user set:', req.session.user); // Debug: session set
     res.redirect('/user-home');
   } catch (err) {
+    console.log('Database error during login:', err);
     res.send('Database error: ' + err.message);
   }
-});
+})
 
 app.get('/register', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'register.html'));
@@ -86,6 +97,7 @@ app.post('/register', async (req, res) => {
 });
 
 app.get('/user-home', requireLogin, (req, res) => {
+  console.log('/user-home, session.user:', req.session.user); // Debug: session in user-home
   res.sendFile(path.join(PUBLIC_DIR, 'user-home.html'));
 });
 
