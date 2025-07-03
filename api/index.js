@@ -5,10 +5,7 @@ const path = require('path');
 const helmet = require('helmet');
 require('dotenv').config();
 
-const db = createClient({
-  url: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
+const db = require('./db');
 
 const app = express();
 
