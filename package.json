@@ -1,26 +1,20 @@
 {
-  "name": "database-pli-belawan",
-  "version": "1.0.0",
-  "description": "Webapp for PLI Belawan using Express and SQLite",
-  "main": "api/index.js",
-  "scripts": {
-    "start": "node api/index.js",
-    "dev": "nodemon api/index.js"
-  },
-  "keywords": [
-    "express",
-    "sqlite",
-    "vercel",
-    "webapp"
-  ],
-  "author": "McMadloi",
-  "license": "ISC",
   "dependencies": {
+    "@libsql/client": "^0.15.9",
+    "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "express-session": "^1.18.1",
     "sqlite3": "^5.1.7"
   },
-  "devDependencies": {
-    "nodemon": "^3.0.2"
-  }
+  "name": "my-webapp",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }
