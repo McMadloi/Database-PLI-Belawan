@@ -17,7 +17,6 @@ const redisClient = createRedisClient({
   url: process.env.REDIS_URL,
   legacyMode: true  // Required for connect-redis v5+ with redis v4+
 })
-
 redisClient.connect().catch(console.error);
 
 // Middleware
