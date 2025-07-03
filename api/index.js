@@ -47,7 +47,7 @@ function calculateTotalWaktu(jamMulai, jamSelesai) {
   const diff = end - start;
   const hDiff = Math.floor(diff / 60);
   const mDiff = diff % 60;
-  return ${hDiff}j ${mDiff}m; // <-- FIXED: use backticks!
+  return `${hDiff}j ${mDiff}m`; // <-- FIXED: use backticks!
 }
 
 function requireLogin(req, res, next) {
