@@ -1,14 +1,12 @@
 require('dotenv').config();
-
 const { createClient } = require('@libsql/client');
-// If using bcrypt for password hashing, uncomment the next line:
-// const bcrypt = require('bcrypt');
 
 const db = createClient({
   url: process.env.TURSO_DATABASE_URL,
   authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
+// Ensure tables exist
 (async () => {
   try {
     await db.execute(`
@@ -44,9 +42,6 @@ module.exports = {
   // Register a new user
   async createUser(username, password) {
     try {
-      // If using bcrypt (recommended for production):
-      // const hashedPassword = await bcrypt.hash(password, 10);
-      // Use hashedPassword instead of password below.
       const result = await db.execute({
         sql: 'INSERT INTO users (username, password) VALUES (?, ?)',
         args: [username, password]
@@ -57,7 +52,7 @@ module.exports = {
     }
   },
 
-  // Login: find user by username and password
+  // Find a user by username and password (for login)
   async findUser(username, password) {
     try {
       const result = await db.execute({
@@ -70,7 +65,7 @@ module.exports = {
     }
   },
 
-  // Find user by username only (for registration checks, etc.)
+  // Find a user by username only (for registration checks)
   async findUserByUsername(username) {
     try {
       const result = await db.execute({
