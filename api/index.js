@@ -1,8 +1,12 @@
 const express = require('express');
+const { createClient } = require('@libsql/client');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
-const db = require('./db.js'); // adjust path if needed!
+const db = createClient({
+  url: process.env.libsql://pli-belawan-mcmadloi.aws-us-east-1.turso.io,
+  authToken: process.env.eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NTE0Nzc5MjcsImlkIjoiYzliN2M3MDctOWJkNy00MzEzLWIyZWEtNzNlY2RmOGUwYTJjIiwicmlkIjoiNDljYjBlMzctYTE5NC00ZmNkLThhZTgtZjZjZTJmYWI4OTkyIn0.F4P3IcsYjBfmH7TssmeGYrDwS4PQmhkhn4OgRbPPJy7hcRR_5PLZDjaePMPBJOB6q5KgHrL8PmfTBAP3oeTkDA,
+});
 const app = express();
 
 // Calculate total waktu helper
