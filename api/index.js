@@ -275,7 +275,7 @@ app.get('/visualisasi', requireLogin, async (req, res) => {
   function minutesToWaktuStr(minutes) {
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
-    return ${h}j ${m}m;
+    return ${h}j ${m}m;;
   }
   try {
     const records = await db.getAllLayananRecords();
