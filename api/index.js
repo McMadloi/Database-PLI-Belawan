@@ -1,8 +1,8 @@
 const express = require('express');
 const { createClient: createTursoClient } = require('@libsql/client');
 const session = require('express-session');
-const RedisStore = require('connect-redis')(session);
-const { createClient: createRedisClient } = require('redis')
+const RedisStore = require('connect-redis') .default;
+const { createClient: createRedisClient } = require('redis');
 const path = require('path');
 const helmet = require('helmet');
 require('dotenv').config();
