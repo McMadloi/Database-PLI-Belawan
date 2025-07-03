@@ -55,7 +55,7 @@ function calculateTotalWaktu(jamMulai, jamSelesai) {
   const diff = end - start;
   const hDiff = Math.floor(diff / 60);
   const mDiff = diff % 60;
-  return ${hDiff}j ${mDiff}m;
+  return '${hDiff}j ${mDiff}m';
 }
 
 function requireLogin(req, res, next) {
