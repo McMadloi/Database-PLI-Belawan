@@ -1,5 +1,5 @@
 const express = require('express');
-const { createClient: createTursoClient } = require('@libsql/client');
+const { createClient } = require('@libsql/client');
 const session = require('express-session');
 const RedisStore = require('connect-redis');
 const { createClient: createRedisClient } = require('redis');
