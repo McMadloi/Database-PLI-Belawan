@@ -2,8 +2,8 @@ const { createClient } = require('@libsql/client');
 
 // Load environment variables or hardcode for testing
 const db = createClient({
-  url: process.env.libsql://pli-belawan-mcmadloi.aws-us-east-1.turso.io,
-  authToken: process.env.eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NTE0Nzc5MjcsImlkIjoiYzliN2M3MDctOWJkNy00MzEzLWIyZWEtNzNlY2RmOGUwYTJjIiwicmlkIjoiNDljYjBlMzctYTE5NC00ZmNkLThhZTgtZjZjZTJmYWI4OTkyIn0.F4P3IcsYjBfmH7TssmeGYrDwS4PQmhkhn4OgRbPPJy7hcRR_5PLZDjaePMPBJOB6q5KgHrL8PmfTBAP3oeTkDA,
+  url: "libsql://pli-belawan-mcmadloi.aws-us-east-1.turso.io",
+  authToken: "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NTE0Nzc5MjcsImlkIjoiYzliN2M3MDctOWJkNy00MzEzLWIyZWEtNzNlY2RmOGUwYTJjIiwicmlkIjoiNDljYjBlMzctYTE5NC00ZmNkLThhZTgtZjZjZTJmYWI4OTkyIn0.F4P3IcsYjBfmH7TssmeGYrDwS4PQmhkhn4OgRbPPJy7hcRR_5PLZDjaePMPBJOB6q5KgHrL8PmfTBAP3oeTkDA",
 });
 
 // Async IIFE to run table creation on startup
