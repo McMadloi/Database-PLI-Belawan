@@ -1,14 +1,14 @@
-require('dotenv').config(); // Load environment variables at the VERY top
+require('dotenv').config();
 
 const { createClient } = require('@libsql/client');
+// If using bcrypt for password hashing, uncomment the next line:
+// const bcrypt = require('bcrypt');
 
-// Use standard env variable names (recommended for Turso/libSQL)
 const db = createClient({
   url: process.env.TURSO_DATABASE_URL,
   authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
-// Async IIFE to run table creation on startup
 (async () => {
   try {
     await db.execute(`
@@ -44,6 +44,9 @@ module.exports = {
   // Register a new user
   async createUser(username, password) {
     try {
+      // If using bcrypt (recommended for production):
+      // const hashedPassword = await bcrypt.hash(password, 10);
+      // Use hashedPassword instead of password below.
       const result = await db.execute({
         sql: 'INSERT INTO users (username, password) VALUES (?, ?)',
         args: [username, password]
@@ -54,7 +57,7 @@ module.exports = {
     }
   },
 
-  // Find a user by username and password (login)
+  // Login: find user by username and password
   async findUser(username, password) {
     try {
       const result = await db.execute({
@@ -67,7 +70,7 @@ module.exports = {
     }
   },
 
-  // Check if a username exists
+  // Find user by username only (for registration checks, etc.)
   async findUserByUsername(username) {
     try {
       const result = await db.execute({
@@ -130,4 +133,4 @@ module.exports = {
       throw err;
     }
   }
-}
+};
