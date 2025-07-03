@@ -62,6 +62,15 @@ function requireLogin(req, res, next) {
 
 // Routes
 
+app.get('/redish-health', async (req, res) => {
+  try {
+    const pong = await redisClient.ping();
+    res.send('Upstash Redis is responding: ' + pong);
+  } catch (err) {
+    res.status(500).send('Upstash Redis error: ' + err.message);
+  }
+});
+
 app.get('/', (req, res) => {
   res.redirect(req.session.user ? '/user-home' : '/login');
 });
