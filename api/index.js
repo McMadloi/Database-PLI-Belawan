@@ -13,20 +13,13 @@ const app = express();
 
 const PUBLIC_DIR = path.join(process.cwd(), 'public');
 
-// --- Redis client setup with error/ready logging ---
 const redisClient = createRedisClient({
   url: process.env.REDIS_URL,
-  legacyMode: true // Required for connect-redis v5+ with redis v4+
-});
-redisClient.on('error', (err) => {
-  console.error('Redis Client Error:', err);
-});
-redisClient.on('ready', () => {
-  console.log('Redis Client is ready!');
-});
+  legacyMode: true  // Required for connect-redis v5+ with redis v4+
+})
 redisClient.connect().catch(console.error);
 
-// --- Middleware ---
+// Middleware
 app.use(helmet());
 app.use(express.static(PUBLIC_DIR));
 app.use(express.json());
@@ -37,14 +30,14 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === 'production', // true on Vercel!
     httpOnly: true,
     sameSite: 'lax',
     maxAge: 24 * 60 * 60 * 1000
   }
-}));
+}))
 
-// --- Helpers ---
+// Helpers
 function calculateTotalWaktu(jamMulai, jamSelesai) {
   if (!jamMulai || !jamSelesai) return '';
   const [hStart, mStart] = jamMulai.split(':').map(Number);
@@ -55,11 +48,11 @@ function calculateTotalWaktu(jamMulai, jamSelesai) {
   const diff = end - start;
   const hDiff = Math.floor(diff / 60);
   const mDiff = diff % 60;
-  return '${hDiff}j ${mDiff}m';
+  return ${hDiff}j ${mDiff}m;
 }
 
 function requireLogin(req, res, next) {
-  console.log('requireLogin, session:', req.session);
+  console.log('requireLogin, session:', req.session); // Debug: session on protected route
   if (!req.session.user) {
     console.log('User not logged in, redirecting to /login');
     return res.redirect('/login');
@@ -67,7 +60,7 @@ function requireLogin(req, res, next) {
   next();
 }
 
-// --- Routes ---
+// Routes
 
 app.get('/', (req, res) => {
   res.redirect(req.session.user ? '/user-home' : '/login');
@@ -79,29 +72,22 @@ app.get('/login', (req, res) => {
 
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  console.log('POST /login', { username, password });
+  console.log('POST /login', { username, password }); // Debug: credentials submitted
   try {
     const user = await db.findUser(username, password);
-    console.log('findUser result:', user);
+    console.log('findUser result:', user); // Debug: user from DB
     if (!user) {
       console.log('Login failed: user not found or wrong password');
       return res.send('Login gagal! Username atau password salah. <a href="/login">Coba lagi</a>');
     }
     req.session.user = { id: user.id, username: user.username };
-    console.log('Login successful. Session user set:', req.session.user);
-    req.session.save(err => {
-      if (err) {
-        console.log('Session save error:', err);
-        return res.send('Session error: ' + err.message);
-      }
-      console.log('Session saved successfully.');
-      res.redirect('/user-home');
-    });
+    console.log('Login successful. Session user set:', req.session.user); // Debug: session set
+    res.redirect('/user-home');
   } catch (err) {
     console.log('Database error during login:', err);
     res.send('Database error: ' + err.message);
   }
-});
+})
 
 app.get('/register', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'register.html'));
@@ -120,7 +106,7 @@ app.post('/register', async (req, res) => {
 });
 
 app.get('/user-home', requireLogin, (req, res) => {
-  console.log('/user-home, session.user:', req.session.user);
+  console.log('/user-home, session.user:', req.session.user); // Debug: session in user-home
   res.sendFile(path.join(PUBLIC_DIR, 'user-home.html'));
 });
 
@@ -275,7 +261,7 @@ app.get('/visualisasi', requireLogin, async (req, res) => {
   function minutesToWaktuStr(minutes) {
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
-    return ${h}j ${m}m;;
+    return ${h}j ${m}m;
   }
   try {
     const records = await db.getAllLayananRecords();
@@ -465,5 +451,5 @@ app.use((err, req, res, next) => {
   res.status(500).send('Terjadi kesalahan server. Coba lagi nanti.');
 });
 
-// Export for Vercel/serverless
+// Export for Vercel
 module.exports = app;
