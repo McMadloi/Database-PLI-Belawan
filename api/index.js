@@ -8,15 +8,14 @@ const helmet = require('helmet');
 require('dotenv').config();
 
 const db = require('./db');
-
 const app = express();
 
 const PUBLIC_DIR = path.join(process.cwd(), 'public');
 
 const redisClient = createRedisClient({
   url: process.env.REDIS_URL,
-  legacyMode: true  // Required for connect-redis v5+ with redis v4+
-})
+  legacyMode: true
+});
 redisClient.connect().catch(console.error);
 
 // Middleware
@@ -30,12 +29,12 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production', // true on Vercel!
+    secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     sameSite: 'lax',
     maxAge: 24 * 60 * 60 * 1000
   }
-}))
+}));
 
 // Helpers
 function calculateTotalWaktu(jamMulai, jamSelesai) {
@@ -48,11 +47,11 @@ function calculateTotalWaktu(jamMulai, jamSelesai) {
   const diff = end - start;
   const hDiff = Math.floor(diff / 60);
   const mDiff = diff % 60;
-  return ${hDiff}j ${mDiff}m;
+  return ${hDiff}j ${mDiff}m; // <-- FIXED: use backticks!
 }
 
 function requireLogin(req, res, next) {
-  console.log('requireLogin, session:', req.session); // Debug: session on protected route
+  console.log('requireLogin, session:', req.session);
   if (!req.session.user) {
     console.log('User not logged in, redirecting to /login');
     return res.redirect('/login');
@@ -72,22 +71,22 @@ app.get('/login', (req, res) => {
 
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  console.log('POST /login', { username, password }); // Debug: credentials submitted
+  console.log('POST /login', { username, password });
   try {
     const user = await db.findUser(username, password);
-    console.log('findUser result:', user); // Debug: user from DB
+    console.log('findUser result:', user);
     if (!user) {
       console.log('Login failed: user not found or wrong password');
       return res.send('Login gagal! Username atau password salah. <a href="/login">Coba lagi</a>');
     }
     req.session.user = { id: user.id, username: user.username };
-    console.log('Login successful. Session user set:', req.session.user); // Debug: session set
+    console.log('Login successful. Session user set:', req.session.user);
     res.redirect('/user-home');
   } catch (err) {
     console.log('Database error during login:', err);
     res.send('Database error: ' + err.message);
   }
-})
+});
 
 app.get('/register', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'register.html'));
@@ -106,7 +105,7 @@ app.post('/register', async (req, res) => {
 });
 
 app.get('/user-home', requireLogin, (req, res) => {
-  console.log('/user-home, session.user:', req.session.user); // Debug: session in user-home
+  console.log('/user-home, session.user:', req.session.user);
   res.sendFile(path.join(PUBLIC_DIR, 'user-home.html'));
 });
 
@@ -261,7 +260,7 @@ app.get('/visualisasi', requireLogin, async (req, res) => {
   function minutesToWaktuStr(minutes) {
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
-    return ${h}j ${m}m;
+    return ${h}j ${m}m; // <-- FIXED
   }
   try {
     const records = await db.getAllLayananRecords();
