@@ -13,6 +13,11 @@ const app = express();
 
 const PUBLIC_DIR = path.join(process.cwd(), 'public');
 
+const redisClient = createClient({
+  url: process.env.REDIS_URL,
+  legacyMode: true  // Required for connect-redis v5+ with redis v4+
+})
+
 // Middleware
 app.use(helmet());
 app.use(express.static(PUBLIC_DIR));
