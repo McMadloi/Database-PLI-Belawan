@@ -6,8 +6,8 @@ const helmet = require('helmet');
 require('dotenv').config();
 
 const db = createClient({
-  url: process.env.DB_URL,
-  authToken: process.env.DB_AUTH_TOKEN,
+  url: process.env.TURSO_DATABASE_URL,
+  authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
 const app = express();
