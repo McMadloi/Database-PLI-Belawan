@@ -1,15 +1,37 @@
 const express = require('express');
 const { createClient } = require('@libsql/client');
 const session = require('express-session');
-const bodyParser = require('body-parser');
 const path = require('path');
+const helmet = require('helmet');
+require('dotenv').config();
+
 const db = createClient({
   url: process.env.DB_URL,
   authToken: process.env.DB_AUTH_TOKEN,
 });
+
 const app = express();
 
-// Calculate total waktu helper
+const PUBLIC_DIR = path.join(process.cwd(), 'public');
+
+// Middleware
+app.use(helmet());
+app.use(express.static(PUBLIC_DIR));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'change_this_secret_in_prod',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: 24 * 60 * 60 * 1000
+  }
+}));
+
+// Helpers
 function calculateTotalWaktu(jamMulai, jamSelesai) {
   if (!jamMulai || !jamSelesai) return '';
   const [hStart, mStart] = jamMulai.split(':').map(Number);
@@ -23,69 +45,49 @@ function calculateTotalWaktu(jamMulai, jamSelesai) {
   return `${hDiff}j ${mDiff}m`;
 }
 
-// Use process.cwd() because __dirname is not defined in Vercel
-const PUBLIC_DIR = path.join(process.cwd(), 'public');
-
-// Middleware
-app.use(express.static(PUBLIC_DIR));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(session({
-  secret: 'your_secret_key', // Change this in production!
-  resave: false,
-  saveUninitialized: true
-}));
-
 function requireLogin(req, res, next) {
-  if (!req.session.user) {
-    return res.redirect('/login');
-  }
+  if (!req.session.user) return res.redirect('/login');
   next();
 }
 
-// Home Page (redirect to login or user home)
+// Routes
+
 app.get('/', (req, res) => {
-  if (req.session.user) {
-    res.redirect('/user-home');
-  } else {
-    res.redirect('/login');
-  }
+  res.redirect(req.session.user ? '/user-home' : '/login');
 });
 
-// Login Page
 app.get('/login', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'login.html'));
 });
 
-// Login Handler
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  db.findUser(username, password, (err, user) => {
-    if (err) return res.send('Database error: ' + err.message);
+  try {
+    const user = await db.findUser(username, password);
     if (!user) return res.send('Login gagal! Username atau password salah. <a href="/login">Coba lagi</a>');
     req.session.user = { id: user.id, username: user.username };
     res.redirect('/user-home');
-  });
+  } catch (err) {
+    res.send('Database error: ' + err.message);
+  }
 });
 
-// Register Page
 app.get('/register', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'register.html'));
 });
 
-// Register Handler
-app.post('/register', (req, res) => {
+app.post('/register', async (req, res) => {
   const { username, password } = req.body;
-  db.findUserByUsername(username, (err, user) => {
-    if (err) return res.send('Database error: ' + err.message);
+  try {
+    const user = await db.findUserByUsername(username);
     if (user) return res.send('Username sudah digunakan. <a href="/register">Coba lagi</a>');
-    db.createUser(username, password, (err, id) => {
-      if (err) return res.send('Database error: ' + err.message);
-      res.send('Registrasi berhasil! <a href="/login">Login di sini</a>');
-    });
-  });
+    await db.createUser(username, password);
+    res.send('Registrasi berhasil! <a href="/login">Login di sini</a>');
+  } catch (err) {
+    res.send('Database error: ' + err.message);
+  }
 });
 
-// User Home
 app.get('/user-home', requireLogin, (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'user-home.html'));
 });
@@ -94,20 +96,15 @@ app.get('/user-info', requireLogin, (req, res) => {
   res.json({ username: req.session.user.username });
 });
 
-// Logout
 app.get('/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.redirect('/login');
-  });
+  req.session.destroy(() => res.redirect('/login'));
 });
 
-// Show form (Menu Perekaman Pengguna Layanan)
 app.get('/perekaman', requireLogin, (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'perekaman.html'));
 });
 
-// Handle form submit
-app.post('/perekaman', requireLogin, (req, res) => {
+app.post('/perekaman', requireLogin, async (req, res) => {
   const data = {
     tanggal: req.body.tanggal,
     nama: req.body.nama,
@@ -119,19 +116,20 @@ app.post('/perekaman', requireLogin, (req, res) => {
     jawaban: req.body.jawaban,
     petugas: req.body.petugas || req.session.user.username
   };
-  db.createLayananRecord(data, (err, id) => {
-    if (err) return res.send('Database error: ' + err.message);
+  try {
+    await db.createLayananRecord(data);
     res.redirect('/data');
-  });
+  } catch (err) {
+    res.send('Database error: ' + err.message);
+  }
 });
 
-// Show data list (Menu Data Pengguna Layanan)
-app.get('/data', requireLogin, (req, res) => {
+app.get('/data', requireLogin, async (req, res) => {
   const page = parseInt(req.query.page, 10) || 1;
   const limit = 10;
   const offset = (page - 1) * limit;
-  db.getAllLayananRecords((err, records) => {
-    if (err) return res.send('Database error: ' + err.message);
+  try {
+    const records = await db.getAllLayananRecords();
     const totalRows = records.length;
     const totalPages = Math.ceil(totalRows / limit);
     const pagedRecords = records.slice(offset, offset + limit);
@@ -228,15 +226,27 @@ document.getElementById('exportBtn').addEventListener('click', function() {
 </html>
     `;
     res.send(out);
-  });
+  } catch (err) {
+    res.send('Database error: ' + err.message);
+  }
 });
 
-// Visualisasi Data Pengguna Layanan - chart page
-app.get('/visualisasi', requireLogin, (req, res) => {
-  db.getAllLayananRecords((err, records) => {
-    if (err) return res.send('Database error: ' + err.message);
-
-    // --- Average Total Waktu Calculation ---
+app.get('/visualisasi', requireLogin, async (req, res) => {
+  function waktuStrToMinutes(waktuStr) {
+    if (!waktuStr) return 0;
+    let match = waktuStr.match(/(\d+)j/);
+    let hours = match ? parseInt(match[1], 10) : 0;
+    match = waktuStr.match(/(\d+)m/);
+    let minutes = match ? parseInt(match[1], 10) : 0;
+    return hours * 60 + minutes;
+  }
+  function minutesToWaktuStr(minutes) {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return `${h}j ${m}m`;
+  }
+  try {
+    const records = await db.getAllLayananRecords();
     let totalMinutes = 0;
     let count = 0;
     for (const r of records) {
@@ -250,7 +260,6 @@ app.get('/visualisasi', requireLogin, (req, res) => {
     const avgMinutes = count ? Math.round(totalMinutes / count) : 0;
     const avgWaktuStr = minutesToWaktuStr(avgMinutes);
 
-    // count per Jenis Layanan
     const layananCounts = {};
     for (const r of records) {
       const jenis = r.jenis_layanan || 'Lainnya';
@@ -259,7 +268,6 @@ app.get('/visualisasi', requireLogin, (req, res) => {
     const labels = Object.keys(layananCounts);
     const data = Object.values(layananCounts);
 
-    // Count per Petugas for the pie chart
     const petugasCounts = {};
     for (const r of records) {
       const petugas = r.petugas || 'Lainnya';
@@ -268,7 +276,6 @@ app.get('/visualisasi', requireLogin, (req, res) => {
     const petugasLabels = Object.keys(petugasCounts);
     const petugasData = Object.values(petugasCounts);
 
-    // Group total data per date for the line chart
     const dateCounts = {};
     for (const r of records) {
       const date = r.tanggal || r.date || 'Unknown Date';
@@ -276,21 +283,6 @@ app.get('/visualisasi', requireLogin, (req, res) => {
     }
     const dateLabels = Object.keys(dateCounts).sort();
     const dateData = dateLabels.map(date => dateCounts[date]);
-
-    function waktuStrToMinutes(waktuStr) {
-      if (!waktuStr) return 0;
-      let match = waktuStr.match(/(\d+)j/);
-      let hours = match ? parseInt(match[1], 10) : 0;
-      match = waktuStr.match(/(\d+)m/);
-      let minutes = match ? parseInt(match[1], 10) : 0;
-      return hours * 60 + minutes;
-    }
-
-    function minutesToWaktuStr(minutes) {
-      const h = Math.floor(minutes / 60);
-      const m = minutes % 60;
-      return `${h}j ${m}m`;
-    }
 
     res.send(`
 <!DOCTYPE html>
@@ -416,21 +408,30 @@ app.get('/visualisasi', requireLogin, (req, res) => {
 </body>
 </html>
     `);
-  });
+  } catch (err) {
+    res.send('Database error: ' + err.message);
+  }
 });
 
-// Optional: List registered users (for admin/testing only)
-app.get('/show-users', requireLogin, (req, res) => {
-  db.listUsers((err, users) => {
-    if (err) return res.send('Database error: ' + err.message);
+app.get('/show-users', requireLogin, async (req, res) => {
+  try {
+    const users = await db.listUsers();
     let out = `<h2>Registered Users</h2><ul>`;
     for (const user of users) {
       out += `<li>${user.username}</li>`;
     }
     out += `</ul><a href="/user-home">Back</a>`;
     res.send(out);
-  });
+  } catch (err) {
+    res.send('Database error: ' + err.message);
+  }
 });
 
-// Export the Express app for Vercel serverless
+// Error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Terjadi kesalahan server. Coba lagi nanti.');
+});
+
+// Export for Vercel
 module.exports = app;
