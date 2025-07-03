@@ -18,22 +18,25 @@ const redisClient = createClient({
   legacyMode: true  // Required for connect-redis v5+ with redis v4+
 })
 
+redisClient.connect().catch(console.error);
+
 // Middleware
 app.use(helmet());
 app.use(express.static(PUBLIC_DIR));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'change_this_secret_in_prod',
+  store: new RedisStore({ client: redisClient }),
+  secret: process.env.SESSION_SECRET || 'change_this_secret',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === 'production', // true on Vercel!
     httpOnly: true,
     sameSite: 'lax',
     maxAge: 24 * 60 * 60 * 1000
   }
-}));
+}))
 
 // Helpers
 function calculateTotalWaktu(jamMulai, jamSelesai) {
