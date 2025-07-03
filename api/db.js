@@ -1,7 +1,7 @@
 require('dotenv').config();
-const { createClient: createTursoClient } = require('@libsql/client');
+const { createClient } = require('@libsql/client');
 
-const db = createClient: createTursoClient({
+const db = createClient ({
   url: process.env.TURSO_DATABASE_URL,
   authToken: process.env.TURSO_AUTH_TOKEN,
 });
