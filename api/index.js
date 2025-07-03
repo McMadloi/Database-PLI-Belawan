@@ -1,3 +1,8 @@
+Madli Mulya <moelya95@gmail.com>
+	
+14.59 (0 menit yang lalu)
+	
+kepada GitHub
 const express = require('express');
 const { createClient } = require('@libsql/client');
 const session = require('express-session');
@@ -260,7 +265,7 @@ app.get('/visualisasi', requireLogin, async (req, res) => {
   function minutesToWaktuStr(minutes) {
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
-    return ${h}j ${m}m; // <-- FIXED
+    return `${h}j ${m}m`; // <-- FIXED
   }
   try {
     const records = await db.getAllLayananRecords();
@@ -433,7 +438,7 @@ app.get('/visualisasi', requireLogin, async (req, res) => {
 app.get('/show-users', requireLogin, async (req, res) => {
   try {
     const users = await db.listUsers();
-    let out = <h2>Registered Users</h2><ul>;
+    let out = `<h2>Registered Users</h2><ul>`;
     for (const user of users) {
       out += `<li>${user.username}</li>`;
     }
