@@ -1,7 +1,7 @@
 const express = require('express');
 const { createClient: createTursoClient } = require('@libsql/client');
 const session = require('express-session');
-const RedisStore = require('connect-redis') .default;
+const RedisStore = require('connect-redis');
 const { createClient: createRedisClient } = require('redis');
 const path = require('path');
 const helmet = require('helmet');
@@ -13,7 +13,7 @@ const app = express();
 
 const PUBLIC_DIR = path.join(process.cwd(), 'public');
 
-const redisClient = createClient({
+const redisClient = createRedisClient({
   url: process.env.REDIS_URL,
   legacyMode: true  // Required for connect-redis v5+ with redis v4+
 })
