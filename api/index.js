@@ -1,8 +1,4 @@
-Madli Mulya <moelya95@gmail.com>
-	
-14.59 (0 menit yang lalu)
-	
-kepada GitHub
+
 const express = require('express');
 const { createClient } = require('@libsql/client');
 const session = require('express-session');
