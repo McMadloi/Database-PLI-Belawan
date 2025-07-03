@@ -1,9 +1,11 @@
+require('dotenv').config(); // Load environment variables at the VERY top
+
 const { createClient } = require('@libsql/client');
 
-// Load environment variables or hardcode for testing
+// Use standard env variable names (recommended for Turso/libSQL)
 const db = createClient({
-  url: process.env.DB_URL,
-  authToken: process.env.DB_AUTH_TOKEN,
+  url: process.env.TURSO_DATABASE_URL,
+  authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
 // Async IIFE to run table creation on startup
